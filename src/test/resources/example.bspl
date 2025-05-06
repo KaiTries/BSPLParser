@@ -1,0 +1,6 @@
+Order { roles B , S parameters in ID key , out item , out price , out rID // some comment
+B → S : rfq [ in ID , out item ]
+S → B : quote [ in ID , in item , out price ]
+B → S : accept [ in ID , in item , in price , out rID ]
+B → S : reject [ in ID , in item , in price , out rID ]
+}
