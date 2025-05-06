@@ -2,8 +2,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import Tokenizer.BSPLToken;
@@ -66,12 +69,13 @@ public class TestTokenizer {
     }
 
     @Test
-    public void testTokenize() throws IOException {
+    public void testTokenize() throws IOException, URISyntaxException {
         // Test the tokenize method
-        final String absPath = "/Users/kaischultz/github/BSPLParser/src/test/resources" +
-            "/example_logistics" +
-            ".bspl";
-        final String fileString = Files.readString(Path.of(absPath));
+        URL resource = getClass().getClassLoader().getResource("example_logistics.bspl");
+        assertNotNull(resource);
+        Path path = Paths.get(resource.toURI());
+
+        final String fileString = Files.readString(path);
         assertNotNull(fileString);
         final BSPLTokenizer tokenizer = new BSPLTokenizer(fileString);
 
