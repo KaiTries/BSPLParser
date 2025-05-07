@@ -1,24 +1,31 @@
 package Parser;
 
+import static Tokenizer.BSPLTokenType.ADORNMENT;
+import static Tokenizer.BSPLTokenType.ARROW;
 import static Tokenizer.BSPLTokenType.DELIMITER;
+import static Tokenizer.BSPLTokenType.KEY;
+import static Tokenizer.BSPLTokenType.KEYWORD;
 import static Tokenizer.BSPLTokenType.WORD;
 
+import Parser.BSPLClasses.BSPLParameter;
+import Parser.BSPLClasses.BSPLPrivateParameters;
+import Parser.BSPLClasses.Reference.BSPLMessage;
+import Parser.BSPLClasses.Reference.BSPLReference;
+import Parser.BSPLClasses.BSPLRole;
 import Tokenizer.BSPLToken;
 import Tokenizer.BSPLTokenType;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import tokens.BSPLProtocol;
 
 public class BSPLParser {
     private final List<BSPLToken> tokens;
     private int currentTokenIndex = 0;
 
 
-    private final List<BSPLProtocol> protocols;
 
     public BSPLParser(List<BSPLToken> tokens) {
         this.tokens = tokens;
-        this.protocols = List.of();
     }
 
     public void parse() {
@@ -27,39 +34,189 @@ public class BSPLParser {
         assertTokenTypeAndValue(getNextToken(), DELIMITER, "{");
         System.out.println("Protocol Name: " + protocolName.value());
 
-        while (currentTokenIndex < tokens.size()) {
-            BSPLToken token = getNextToken();
+        final List<BSPLRole> roles = this.parseRoles();
+        System.out.println("Roles: " + roles);
+        final List<BSPLParameter> parameters = this.parseParameters();
+        System.out.println("Parameters: " + parameters);
+        final List<BSPLPrivateParameters> privateParameters = this.parsePrivateParameters();
+        System.out.println("Private Parameters: " + privateParameters);
+        final List<BSPLReference> references = this.parseReferences();
+        System.out.println("References: " + references);
+        assertTokenTypeAndValue(getNextToken(), DELIMITER, "}");
+        System.out.println("End of Protocol");
 
+    }
 
-            if (token == null || (currentTokenIndex == tokens.size() &&
-                !Objects.equals(token.value(), "}"))) {
-                throw new IllegalArgumentException("Unexpected end of input." + token);
-            }
-            if (token.type() == DELIMITER && token.value().equals("}")) {
-                System.out.println("Token: " + token);
-                break;
-            }
-            System.out.println("Token: " + token);
+    private List<BSPLRole> parseRoles() {
+        if (!checkTokenTypeAndValue(peekNextToken(), KEYWORD, "roles")) {
+            return List.of();
         }
+        assertTokenTypeAndValue(getNextToken(), KEYWORD, "roles");
+
+        BSPLToken token = peekNextToken();
+
+        final List<BSPLRole> roles = new ArrayList<>();
+
+        while (!checkTokenType(token, KEYWORD)) {
+            token = getNextToken();
+            assertTokenType(token, WORD);
+            roles.add(new BSPLRole(token.value()));
+            token = peekNextToken();
+            if (checkTokenTypeAndValue(token, DELIMITER, ",")) {
+                getNextToken();
+                token = peekNextToken();
+            } else {
+                break; // we know roles are over if the last word is not followed by a delimiter
+            }
+        }
+        return roles;
+    }
+
+    private BSPLParameter parseParameter() {
+        BSPLToken adornment = getNextToken();
+        assertTokenType(adornment, ADORNMENT);
+        BSPLToken parameter = getNextToken();
+        assertTokenType(parameter, WORD);
+        boolean key = false;
+        if (checkTokenType(peekNextToken(), KEY)) {
+            key = true;
+            getNextToken();
+        }
+        return new BSPLParameter(adornment.value(), parameter.value(), key);
+    }
+
+    private List<BSPLParameter> parseParameters() {
+        if (!checkTokenTypeAndValue(peekNextToken(), KEYWORD, "parameters")) {
+            return List.of();
+        }
+        assertTokenTypeAndValue(getNextToken(), KEYWORD, "parameters");
+
+        BSPLToken token = peekNextToken();
+
+        final List<BSPLParameter> parameters = new ArrayList<>();
+
+        while (!checkTokenType(token, KEYWORD)) {
+            parameters.add(parseParameter());
+            token = peekNextToken();
+            if (checkTokenTypeAndValue(token, DELIMITER, ",")) {
+                getNextToken();
+                token = peekNextToken();
+            } else {
+                break; // we know parameters are over if the last word is not followed by a
+                // delimiter
+            }
+        }
+        return parameters;
+    }
+
+    private List<BSPLPrivateParameters> parsePrivateParameters() {
+        if (!checkTokenTypeAndValue(peekNextToken(), KEYWORD, "private")) {
+            return List.of();
+        }
+        assertTokenTypeAndValue(getNextToken(), KEYWORD, "private");
+        final List<BSPLPrivateParameters> privateParameters = new ArrayList<>();
+
+        BSPLToken token = peekNextToken();
+        while (!checkTokenType(token, KEYWORD)) {
+            token = getNextToken();
+            assertTokenType(token, WORD);
+
+            privateParameters.add(new BSPLPrivateParameters(token.value()));
+            token = peekNextToken();
+            if (checkTokenTypeAndValue(token, DELIMITER, ",")) {
+                getNextToken();
+                token = peekNextToken();
+            } else {
+                break; // we know private params are over if the last word is not followed by a
+                // delimiter
+            }
+        }
+        return privateParameters;
+    }
+
+    private List<BSPLReference> parseReferences() {
+        final List<BSPLReference> references = new ArrayList<>();
+        BSPLReference nextReference = parseReference();
+        while (nextReference != null) {
+            references.add(nextReference);
+            nextReference = parseReference();
+        }
+        return references;
+    }
+
+    private BSPLReference parseReference() {
+        if (!checkTokenType(peekNextToken(), WORD)) {
+            return null;
+        }
+        BSPLToken referenceNameOrSender = getNextToken();
+        assertTokenType(referenceNameOrSender, WORD);
 
 
+        // its either a reference or a message
+        BSPLToken token = peekNextToken();
+        if (checkTokenType(token, ARROW)) { // in a message
+            getNextToken(); // consume the arrow
+            BSPLToken recipient = getNextToken();
+            assertTokenType(recipient, WORD);
+            assertTokenTypeAndValue(getNextToken(), DELIMITER, ":");
+
+            BSPLToken messageName = getNextToken();
+            assertTokenType(messageName, WORD);
+
+            // parse message body for parameters [ param1, param2, ...]
+            assertTokenTypeAndValue(getNextToken(), DELIMITER, "[");
+            token = peekNextToken();
+            List<BSPLParameter> parameters = new ArrayList<>();
+            while (!checkTokenTypeAndValue(token, DELIMITER, "]")) {
+                parameters.add(parseParameter());
+                token = getNextToken();
+            }
+            return new BSPLMessage(referenceNameOrSender.value(), recipient.value(),
+                messageName.value(),parameters);
+        } else if (checkTokenTypeAndValue(token, DELIMITER, "(")) { // in a reference
+            throw new IllegalArgumentException("BSPL references not yet implemented");
+        } else {
+            throw new IllegalArgumentException(
+                "Expected token type: " + ARROW + " or " + DELIMITER + " but got: " + token);
+        }
+    }
+
+
+    private boolean checkTokenType(BSPLToken token, BSPLTokenType expectedType) {
+        return token != null && token.type() == expectedType;
+    }
+
+    private boolean checkTokenTypeAndValue(BSPLToken token, BSPLTokenType expectedType,
+                                           String expectedValue) {
+        return token != null && token.type() == expectedType &&
+            Objects.equals(token.value(), expectedValue);
     }
 
     private void assertTokenType(BSPLToken token, BSPLTokenType expectedType) {
         if (token == null) {
-            throw new IllegalArgumentException("Expected token type: " + expectedType + " but got null");
+            throw new IllegalArgumentException(
+                "Expected token type: " + expectedType + " but got null");
         }
         if (token.type() != expectedType) {
-            throw new IllegalArgumentException("Expected token type: " + expectedType + " but got: " + token);
+            throw new IllegalArgumentException(
+                "Expected token type: " + expectedType + " but got: " + token);
+        }
+        if (token.value() == null) {
+            throw new IllegalArgumentException("Expected token to have value but got null");
         }
     }
 
-    private void assertTokenTypeAndValue(BSPLToken token, BSPLTokenType expectedType, String expectedValue) {
+    private void assertTokenTypeAndValue(BSPLToken token, BSPLTokenType expectedType,
+                                         String expectedValue) {
         if (token == null) {
-            throw new IllegalArgumentException("Expected token type: " + expectedType + " and value: " + expectedValue + " but got null");
+            throw new IllegalArgumentException(
+                "Expected token type: " + expectedType + " and value: " + expectedValue +
+                    " but got null");
         }
         if (token.type() != expectedType || !Objects.equals(token.value(), expectedValue)) {
-            throw new IllegalArgumentException("Expected token type: " + expectedType + " and value: " + expectedValue + " but got: " + token);
+            throw new IllegalArgumentException(
+                "Expected token type: " + expectedType + " and value: " + expectedValue +
+                    " but got: " + token);
         }
     }
 
