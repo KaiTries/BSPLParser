@@ -9,6 +9,7 @@ import static Tokenizer.BSPLTokenType.WORD;
 
 import Parser.BSPLClasses.BSPLParameter;
 import Parser.BSPLClasses.BSPLPrivateParameters;
+import Parser.BSPLClasses.BSPLProtocol;
 import Parser.BSPLClasses.Reference.BSPLMessage;
 import Parser.BSPLClasses.Reference.BSPLReference;
 import Parser.BSPLClasses.BSPLRole;
@@ -28,23 +29,33 @@ public class BSPLParser {
         this.tokens = tokens;
     }
 
-    public void parse() {
+    public List<BSPLProtocol> parse() {
+        List<BSPLProtocol> protocols = new ArrayList<>();
+
+        while (currentTokenIndex < tokens.size()) {
+            BSPLToken token = peekNextToken();
+            if (checkTokenType(token, WORD)) {
+                protocols.add(parseProtocol());
+            } else {
+                throw new IllegalArgumentException("Unexpected token: " + token);
+            }
+        }
+        return protocols;
+    }
+
+    private BSPLProtocol parseProtocol() {
         BSPLToken protocolName = getNextToken();
         assertTokenType(protocolName, WORD);
         assertTokenTypeAndValue(getNextToken(), DELIMITER, "{");
-        System.out.println("Protocol Name: " + protocolName.value());
 
         final List<BSPLRole> roles = this.parseRoles();
-        System.out.println("Roles: " + roles);
         final List<BSPLParameter> parameters = this.parseParameters();
-        System.out.println("Parameters: " + parameters);
         final List<BSPLPrivateParameters> privateParameters = this.parsePrivateParameters();
-        System.out.println("Private Parameters: " + privateParameters);
         final List<BSPLReference> references = this.parseReferences();
-        System.out.println("References: " + references);
         assertTokenTypeAndValue(getNextToken(), DELIMITER, "}");
-        System.out.println("End of Protocol");
 
+        return new BSPLProtocol(protocolName.value(), roles, parameters, privateParameters,
+            references);
     }
 
     private List<BSPLRole> parseRoles() {
