@@ -15,8 +15,8 @@ public record BSPLProtocol(String name, java.util.List<BSPLRole> roles,
         return  "\n" + name +" {\n" +
                 "\troles " + getRolesString() +
                 "\tparameters " + getParametersString() +
-                "\tprivate " + getPrivateParametersString() +
-                "\n\t" + getReferencesString() +
+                getPrivateParametersString() +
+                "\t" + getReferencesString() +
                 "}\n";
     }
 
@@ -43,11 +43,15 @@ public record BSPLProtocol(String name, java.util.List<BSPLRole> roles,
 
     private String getPrivateParametersString() {
         StringBuilder sb = new StringBuilder();
+        sb.append("\tprivate ");
+        if (privateParameters.isEmpty()) {
+            return "\n";
+        }
         for (BSPLPrivateParameters privateParameter : privateParameters) {
             sb.append(privateParameter.name()).append(", ");
         }
         sb.delete(sb.length() - 2, sb.length()); // Remove the last comma and space
-        sb.append('\n');
+        sb.append("\n\n");
         return sb.toString();
     }
 
