@@ -13,6 +13,8 @@ import Parser.BSPLClasses.BSPLProtocol;
 import Parser.BSPLClasses.Reference.BSPLMessage;
 import Parser.BSPLClasses.Reference.BSPLReference;
 import Parser.BSPLClasses.BSPLRole;
+import Parser.util.NotImplementedException;
+import Parser.util.ParserException;
 import Tokenizer.BSPLToken;
 import Tokenizer.BSPLTokenType;
 import java.util.ArrayList;
@@ -37,7 +39,7 @@ public class BSPLParser {
             if (checkTokenType(token, WORD)) {
                 protocols.add(parseProtocol());
             } else {
-                throw new IllegalArgumentException("Unexpected token: " + token);
+                throw new ParserException(token);
             }
         }
         return protocols;
@@ -185,9 +187,9 @@ public class BSPLParser {
             return new BSPLMessage(referenceNameOrSender.value(), recipient.value(),
                 messageName.value(),parameters);
         } else if (checkTokenTypeAndValue(token, DELIMITER, "(")) { // in a reference
-            throw new IllegalArgumentException("BSPL references not yet implemented");
+            throw new NotImplementedException("BSPL references not yet implemented");
         } else {
-            throw new IllegalArgumentException(
+            throw new ParserException(
                 "Expected token type: " + ARROW + " or " + DELIMITER + " but got: " + token);
         }
     }
@@ -204,30 +206,19 @@ public class BSPLParser {
     }
 
     private void assertTokenType(BSPLToken token, BSPLTokenType expectedType) {
-        if (token == null) {
-            throw new IllegalArgumentException(
-                "Expected token type: " + expectedType + " but got null");
-        }
-        if (token.type() != expectedType) {
-            throw new IllegalArgumentException(
-                "Expected token type: " + expectedType + " but got: " + token);
+        if (token == null || token.type() != expectedType) {
+            throw new ParserException(token, expectedType);
         }
         if (token.value() == null) {
-            throw new IllegalArgumentException("Expected token to have value but got null");
+            throw new ParserException("Expected token to have value but got null");
         }
     }
 
     private void assertTokenTypeAndValue(BSPLToken token, BSPLTokenType expectedType,
                                          String expectedValue) {
-        if (token == null) {
-            throw new IllegalArgumentException(
-                "Expected token type: " + expectedType + " and value: " + expectedValue +
-                    " but got null");
-        }
-        if (token.type() != expectedType || !Objects.equals(token.value(), expectedValue)) {
-            throw new IllegalArgumentException(
-                "Expected token type: " + expectedType + " and value: " + expectedValue +
-                    " but got: " + token);
+        if (token == null || token.type() != expectedType || !Objects.equals(token.value(),
+            expectedValue)) {
+            throw new ParserException(token, expectedType, expectedValue);
         }
     }
 
