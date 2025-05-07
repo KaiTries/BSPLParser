@@ -22,6 +22,8 @@ public class BSPLTokenizer {
 
     private static final List<String> COMMENTS = List.of("//", "#");
 
+    private static final String KEY = "key";
+
     public BSPLTokenizer(String srcString) {
         this.srcString = srcString;
     }
@@ -38,14 +40,22 @@ public class BSPLTokenizer {
 
     private BSPLTokenType getTokenType(String token) {
         if (DELIMITERS.contains(token.charAt(0))) {
-            return BSPLTokenType.DELIMITER;
+            return switch (token) {
+                case "{" -> BSPLTokenType.BRACE_OPEN;
+                case "}" -> BSPLTokenType.BRACE_CLOSE;
+                case "," -> BSPLTokenType.COMMA;
+                case "[" -> BSPLTokenType.BRACKET_OPEN;
+                case "]" -> BSPLTokenType.BRACKET_CLOSE;
+                case ":" -> BSPLTokenType.COLON;
+                default -> BSPLTokenType.DELIMITER;
+            };
         }
 
         if (KEYWORDS.contains(token)) {
             return BSPLTokenType.KEYWORD;
         }
 
-        if (token.equals("key")) {
+        if (token.equals(KEY)) {
             return BSPLTokenType.KEY;
         }
 
@@ -113,7 +123,8 @@ public class BSPLTokenizer {
 
     private void skipWhitespace() {
         while (this.idx < this.srcString.length() && (
-            srcString.charAt(this.idx) == ' ' || srcString.charAt(this.idx) == '\n')) {
+            srcString.charAt(this.idx) == ' ' || srcString.charAt(this.idx) == '\n'
+            || srcString.charAt(this.idx) == '\t')) {
             this.idx++;
         }
     }

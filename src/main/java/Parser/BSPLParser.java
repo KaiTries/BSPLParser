@@ -2,6 +2,12 @@ package Parser;
 
 import static Tokenizer.BSPLTokenType.ADORNMENT;
 import static Tokenizer.BSPLTokenType.ARROW;
+import static Tokenizer.BSPLTokenType.BRACE_CLOSE;
+import static Tokenizer.BSPLTokenType.BRACE_OPEN;
+import static Tokenizer.BSPLTokenType.BRACKET_CLOSE;
+import static Tokenizer.BSPLTokenType.BRACKET_OPEN;
+import static Tokenizer.BSPLTokenType.COLON;
+import static Tokenizer.BSPLTokenType.COMMA;
 import static Tokenizer.BSPLTokenType.DELIMITER;
 import static Tokenizer.BSPLTokenType.KEY;
 import static Tokenizer.BSPLTokenType.KEYWORD;
@@ -48,13 +54,17 @@ public class BSPLParser {
     private BSPLProtocol parseProtocol() {
         BSPLToken protocolName = getNextToken();
         assertTokenType(protocolName, WORD);
-        assertTokenTypeAndValue(getNextToken(), DELIMITER, "{");
+        assertTokenType(getNextToken(), BRACE_OPEN);
 
         final List<BSPLRole> roles = this.parseRoles();
+        System.out.println("roles: " + roles);
         final List<BSPLParameter> parameters = this.parseParameters();
+        System.out.println("parameters: " + parameters);
         final List<BSPLPrivateParameters> privateParameters = this.parsePrivateParameters();
+        System.out.println("private parameters: " + privateParameters);
         final List<BSPLReference> references = this.parseReferences();
-        assertTokenTypeAndValue(getNextToken(), DELIMITER, "}");
+        System.out.println("references: " + references);
+        assertTokenType(getNextToken(), BRACE_CLOSE);
 
         return new BSPLProtocol(protocolName.value(), roles, parameters, privateParameters,
             references);
@@ -75,7 +85,7 @@ public class BSPLParser {
             assertTokenType(token, WORD);
             roles.add(new BSPLRole(token.value()));
             token = peekNextToken();
-            if (checkTokenTypeAndValue(token, DELIMITER, ",")) {
+            if (checkTokenType(token, COMMA)) {
                 getNextToken();
                 token = peekNextToken();
             } else {
@@ -111,7 +121,7 @@ public class BSPLParser {
         while (!checkTokenType(token, KEYWORD)) {
             parameters.add(parseParameter());
             token = peekNextToken();
-            if (checkTokenTypeAndValue(token, DELIMITER, ",")) {
+            if (checkTokenType(token, COMMA)) {
                 getNextToken();
                 token = peekNextToken();
             } else {
@@ -130,13 +140,13 @@ public class BSPLParser {
         final List<BSPLPrivateParameters> privateParameters = new ArrayList<>();
 
         BSPLToken token = peekNextToken();
-        while (!checkTokenType(token, KEYWORD)) {
+        while (checkTokenType(token, WORD)) {
             token = getNextToken();
             assertTokenType(token, WORD);
 
             privateParameters.add(new BSPLPrivateParameters(token.value()));
             token = peekNextToken();
-            if (checkTokenTypeAndValue(token, DELIMITER, ",")) {
+            if (checkTokenType(token, COMMA)) {
                 getNextToken();
                 token = peekNextToken();
             } else {
@@ -171,16 +181,16 @@ public class BSPLParser {
             getNextToken(); // consume the arrow
             BSPLToken recipient = getNextToken();
             assertTokenType(recipient, WORD);
-            assertTokenTypeAndValue(getNextToken(), DELIMITER, ":");
+            assertTokenType(getNextToken(), COLON);
 
             BSPLToken messageName = getNextToken();
             assertTokenType(messageName, WORD);
 
             // parse message body for parameters [ param1, param2, ...]
-            assertTokenTypeAndValue(getNextToken(), DELIMITER, "[");
+            assertTokenType(getNextToken(), BRACKET_OPEN);
             token = peekNextToken();
             List<BSPLParameter> parameters = new ArrayList<>();
-            while (!checkTokenTypeAndValue(token, DELIMITER, "]")) {
+            while (!checkTokenType(token, BRACKET_CLOSE)) {
                 parameters.add(parseParameter());
                 token = getNextToken();
             }

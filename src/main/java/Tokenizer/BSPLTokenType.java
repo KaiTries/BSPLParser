@@ -2,7 +2,15 @@ package Tokenizer;
 
 public class BSPLTokenType {
     public static final BSPLTokenType KEYWORD = new BSPLTokenType("KEYWORD");
+
     public static final BSPLTokenType DELIMITER = new BSPLTokenType("DELIMITER");
+    public static final BSPLTokenType COMMA = new BSPLTokenType("COMMA");
+    public static final BSPLTokenType COLON = new BSPLTokenType("COLON");
+    public static final BSPLTokenType BRACE_OPEN = new BSPLTokenType("BRACE_OPEN");
+    public static final BSPLTokenType BRACE_CLOSE = new BSPLTokenType("BRACE_CLOSE");
+    public static final BSPLTokenType BRACKET_OPEN = new BSPLTokenType("BRACKET_OPEN");
+    public static final BSPLTokenType BRACKET_CLOSE = new BSPLTokenType("BRACKET_CLOSE");
+
     public static final BSPLTokenType WORD = new BSPLTokenType("WORD");
     public static final BSPLTokenType KEY = new BSPLTokenType("KEY");
     public static final BSPLTokenType ADORNMENT = new BSPLTokenType("ADORNMENT");
