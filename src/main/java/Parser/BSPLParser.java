@@ -32,6 +32,10 @@ public class BSPLParser {
     private final List<BSPLToken> tokens;
     private int currentTokenIndex = 0;
 
+    private static final String ROLES = "roles";
+    private static final String PARAMETERS = "parameters";
+    private static final String PRIVATE = "private";
+
 
 
     public BSPLParser(List<BSPLToken> tokens) {
@@ -68,10 +72,10 @@ public class BSPLParser {
     }
 
     private List<BSPLRole> parseRoles() {
-        if (notKeyword(peekNextToken(), "roles")) {
+        if (notKeyword(peekNextToken(), ROLES)) {
             return List.of();
         }
-        assertKeyword(getNextToken(),"roles");
+        assertKeyword(getNextToken(),ROLES);
 
         BSPLToken token = peekNextToken();
 
@@ -106,10 +110,10 @@ public class BSPLParser {
     }
 
     private List<BSPLParameter> parseParameters() {
-        if (notKeyword(peekNextToken(), "parameters")) {
+        if (notKeyword(peekNextToken(), PARAMETERS)) {
             return List.of();
         }
-        assertKeyword(getNextToken(), "parameters");
+        assertKeyword(getNextToken(), PARAMETERS);
 
         BSPLToken token = peekNextToken();
 
@@ -130,10 +134,10 @@ public class BSPLParser {
     }
 
     private List<BSPLPrivateParameters> parsePrivateParameters() {
-        if (notKeyword(peekNextToken(), "private")) {
+        if (notKeyword(peekNextToken(), PRIVATE)) {
             return List.of();
         }
-        assertKeyword(getNextToken(), "private");
+        assertKeyword(getNextToken(), PRIVATE);
         final List<BSPLPrivateParameters> privateParameters = new ArrayList<>();
 
         BSPLToken token = peekNextToken();
