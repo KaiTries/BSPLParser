@@ -10,6 +10,8 @@ public class BSPLTokenType {
     public static final BSPLTokenType BRACE_CLOSE = new BSPLTokenType("BRACE_CLOSE");
     public static final BSPLTokenType BRACKET_OPEN = new BSPLTokenType("BRACKET_OPEN");
     public static final BSPLTokenType BRACKET_CLOSE = new BSPLTokenType("BRACKET_CLOSE");
+    public static final BSPLTokenType PAREN_OPEN = new BSPLTokenType("PAREN_OPEN");
+    public static final BSPLTokenType PAREN_CLOSE = new BSPLTokenType("PAREN_CLOSE");
 
     public static final BSPLTokenType WORD = new BSPLTokenType("WORD");
     public static final BSPLTokenType KEY = new BSPLTokenType("KEY");

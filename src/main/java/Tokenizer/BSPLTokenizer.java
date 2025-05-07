@@ -47,6 +47,8 @@ public class BSPLTokenizer {
                 case "[" -> BSPLTokenType.BRACKET_OPEN;
                 case "]" -> BSPLTokenType.BRACKET_CLOSE;
                 case ":" -> BSPLTokenType.COLON;
+                case "(" -> BSPLTokenType.PAREN_OPEN;
+                case ")" -> BSPLTokenType.PAREN_CLOSE;
                 default -> BSPLTokenType.DELIMITER;
             };
         }
