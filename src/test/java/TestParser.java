@@ -1,11 +1,9 @@
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import Parser.BSPLClasses.BSPLParameter;
 import Parser.BSPLClasses.BSPLPrivateParameters;
 import Parser.BSPLClasses.BSPLProtocol;
 import Parser.BSPLClasses.BSPLRole;
 import Parser.BSPLParser;
+import Parser.util.ParserException;
 import Tokenizer.BSPLToken;
 import Tokenizer.BSPLTokenizer;
 import java.io.IOException;
@@ -17,6 +15,8 @@ import java.nio.file.Paths;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestParser {
 
@@ -67,20 +67,30 @@ public class TestParser {
   public void testEmptyProtocol() {
     final String fileString = "EmptyProtocol {}";
 
-    final BSPLProtocol expected = new BSPLProtocol("EmptyProtocol",
-        List.of(),
-        List.of(),
-        List.of(),
-        List.of()
-    );
+    final BSPLTokenizer tokenizer = new BSPLTokenizer(fileString);
+    final BSPLParser parser = new BSPLParser(tokenizer.tokenize());
+
+    assertThrows(ParserException.class, parser::parse);
+  }
+
+  @Test
+  public void testProtocolWithNoRoles() {
+    final String fileString = "ProtocolWithNoRoles { parameters in x key, out y }";
 
     final BSPLTokenizer tokenizer = new BSPLTokenizer(fileString);
     final BSPLParser parser = new BSPLParser(tokenizer.tokenize());
-    final List<BSPLProtocol> protocols = parser.parse();
 
-    assertEquals(1, protocols.size());
-    BSPLProtocol emptyProtocol = protocols.getFirst();
-    assertEquals(expected, emptyProtocol);
+    assertThrows(ParserException.class, parser::parse);
+  }
+
+  @Test
+  public void testProtocolWithNoParameters() {
+    final String fileString = "ProtocolWithNoParameters { roles Alice, Bob }";
+
+    final BSPLTokenizer tokenizer = new BSPLTokenizer(fileString);
+    final BSPLParser parser = new BSPLParser(tokenizer.tokenize());
+
+    assertThrows(ParserException.class, parser::parse);
   }
 
   @Test

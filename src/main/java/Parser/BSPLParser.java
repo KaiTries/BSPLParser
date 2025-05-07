@@ -73,7 +73,7 @@ public class BSPLParser {
 
     private List<BSPLRole> parseRoles() {
         if (notKeyword(peekNextToken(), ROLES)) {
-            return List.of();
+            throw new ParserException("Expected mandatory Roles section");
         }
         assertKeyword(getNextToken(),ROLES);
 
@@ -111,7 +111,7 @@ public class BSPLParser {
 
     private List<BSPLParameter> parseParameters() {
         if (notKeyword(peekNextToken(), PARAMETERS)) {
-            return List.of();
+            throw new ParserException("Expected mandatory parameters section");
         }
         assertKeyword(getNextToken(), PARAMETERS);
 
