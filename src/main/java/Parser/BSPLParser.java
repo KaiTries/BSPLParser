@@ -24,6 +24,9 @@ import Parser.util.NotImplementedException;
 import Parser.util.ParserException;
 import Tokenizer.BSPLToken;
 import Tokenizer.BSPLTokenType;
+import Tokenizer.BSPLTokenizer;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -37,6 +40,12 @@ public class BSPLParser {
     private static final String PRIVATE = "private";
 
 
+    public static List<BSPLProtocol> parseFromFile(String filePath) throws IOException {
+        BSPLTokenizer tokenizer = BSPLTokenizer.fromPath(filePath);
+        List<BSPLToken> tokens = tokenizer.tokenize();
+        BSPLParser parser = new BSPLParser(tokens);
+        return parser.parse();
+    }
 
     public BSPLParser(List<BSPLToken> tokens) {
         this.tokens = tokens;

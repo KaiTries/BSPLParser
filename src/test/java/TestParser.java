@@ -120,4 +120,12 @@ public class TestParser {
     assertNotNull(tinyProtocolObj);
     assertEquals(expected, tinyProtocolObj);
   }
+
+  @Test
+  public void testParseFromFile() throws IOException, URISyntaxException {
+    // Test the parseFromFile method
+    final String pathString = "src/test/resources/example_logistics.bspl";
+    final List<BSPLProtocol> protocols = BSPLParser.parseFromFile(pathString);
+    System.out.println(protocols);
+  }
 }

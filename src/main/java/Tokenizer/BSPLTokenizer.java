@@ -1,6 +1,9 @@
 package Tokenizer;
 
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +16,12 @@ public class BSPLTokenizer {
 
     private static final List<Character> DELIMITERS = List.of(',', '{', '}', '[', ']', ':','(', ')');
     private static final List<String> COMMENTS = List.of("//", "#");
+
+
+    public static BSPLTokenizer fromPath(String path) throws IOException {
+        final String fileString = Files.readString(Paths.get(path));
+        return new BSPLTokenizer(fileString);
+    }
 
     public BSPLTokenizer(String srcString) {
         this.srcString = srcString;
