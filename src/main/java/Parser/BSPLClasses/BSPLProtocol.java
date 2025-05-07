@@ -23,16 +23,21 @@ public final class BSPLProtocol {
         this.references = references;
     }
 
+    public BSPLProtocol(String name, List<BSPLRole> roles,
+                        List<BSPLParameter> parameters,
+                        List<BSPLReference> references) {
+        this(name, roles, parameters, List.of(), references);
+    }
 
     @Override
     @NotNull
     public String toString() {
         return "\n" + name + " {\n" +
-            "\t" + createStringFromBSPLList("roles", roles, ", ") +
-            "\t" + createStringFromBSPLList("parameters", parameters, ", ") +
-            "\t" + createStringFromBSPLList("private", privateParameters, ", ") +
+            createStringFromBSPLList("\troles ", roles, ", ") +
+            createStringFromBSPLList("\tparameters ", parameters, ", ") +
+            createStringFromBSPLList("\tprivate ", privateParameters, ", ") +
             "\n" +
-            "\t" + createStringFromBSPLList(null, references, "\n\t") +
+            createStringFromBSPLList("\t", references, "\n\t") +
             "}";
     }
 
@@ -42,7 +47,7 @@ public final class BSPLProtocol {
             return "";
         }
         if (prefix != null) {
-            sb.append(prefix).append(" ");
+            sb.append(prefix);
         }
 
         for (T item : list) {
