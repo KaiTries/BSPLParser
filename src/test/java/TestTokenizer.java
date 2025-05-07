@@ -1,6 +1,7 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import Tokenizer.BSPLTokenType;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -82,5 +83,77 @@ public class TestTokenizer {
         final List<BSPLToken> tokens = tokenizer.tokenize();
 
         System.out.println("Tokens:" + tokens);
+    }
+
+    @Test
+    public void testIgnoreTabs() {
+        // Test the getNextToken method with tabs
+        final String stringWithTabs = "key\tkey";
+        final BSPLTokenizer tokenizer = new BSPLTokenizer(stringWithTabs);
+        assertEquals("key", tokenizer.getNextToken());
+        assertEquals("key", tokenizer.getNextToken());
+    }
+
+    @Test
+    public void testTokenizeEmptyProtocol() {
+        final String emptyProtocol = "EmptyProtocol {}";
+        final BSPLTokenizer tokenizer = new BSPLTokenizer(emptyProtocol);
+        final List<BSPLToken> tokens = tokenizer.tokenize();
+        assertEquals(3, tokens.size());
+        assertTokenEquals(tokens.getFirst(), "EmptyProtocol", BSPLTokenType.WORD);
+        assertTokenEquals(tokens.get(1), "{", BSPLTokenType.BRACE_OPEN);
+        assertTokenEquals(tokens.get(2), "}", BSPLTokenType.BRACE_CLOSE);
+    }
+
+    @Test
+    public void testTokenizeProtocolWithRoles() {
+        final String protocolWithRoles = """
+                                         ProtocolWithRoles {
+                                         \troles Alice, Bob
+                                         }""";
+        final BSPLTokenizer tokenizer = new BSPLTokenizer(protocolWithRoles);
+        final List<BSPLToken> tokens = tokenizer.tokenize();
+        assertEquals(7, tokens.size());
+        assertTokenEquals(tokens.getFirst(), "ProtocolWithRoles", BSPLTokenType.WORD);
+        assertTokenEquals(tokens.get(1), "{", BSPLTokenType.BRACE_OPEN);
+        assertTokenEquals(tokens.get(2), "roles", BSPLTokenType.KEYWORD);
+        assertTokenEquals(tokens.get(3), "Alice", BSPLTokenType.WORD);
+        assertTokenEquals(tokens.get(4), ",", BSPLTokenType.COMMA);
+        assertTokenEquals(tokens.get(5), "Bob", BSPLTokenType.WORD);
+        assertTokenEquals(tokens.get(6), "}", BSPLTokenType.BRACE_CLOSE);
+    }
+
+    @Test
+    public void testTokenizeTinyProtocol() {
+        final String tinyProtocol = """
+                                    TinyProtocol {
+                                    \troles Alice, Bob
+                                    \tparameters in x key,out y
+                                    \tprivate z
+                                    }""";
+        final BSPLTokenizer tokenizer = new BSPLTokenizer(tinyProtocol);
+        final List<BSPLToken> tokens = tokenizer.tokenize();
+        assertEquals(16, tokens.size());
+        assertTokenEquals(tokens.getFirst(), "TinyProtocol", BSPLTokenType.WORD);
+        assertTokenEquals(tokens.get(1), "{", BSPLTokenType.BRACE_OPEN);
+        assertTokenEquals(tokens.get(2), "roles", BSPLTokenType.KEYWORD);
+        assertTokenEquals(tokens.get(3), "Alice", BSPLTokenType.WORD);
+        assertTokenEquals(tokens.get(4), ",", BSPLTokenType.COMMA);
+        assertTokenEquals(tokens.get(5), "Bob", BSPLTokenType.WORD);
+        assertTokenEquals(tokens.get(6), "parameters", BSPLTokenType.KEYWORD);
+        assertTokenEquals(tokens.get(7), "in", BSPLTokenType.ADORNMENT);
+        assertTokenEquals(tokens.get(8), "x", BSPLTokenType.WORD);
+        assertTokenEquals(tokens.get(9), "key", BSPLTokenType.KEY);
+        assertTokenEquals(tokens.get(10), ",", BSPLTokenType.COMMA);
+        assertTokenEquals(tokens.get(11), "out", BSPLTokenType.ADORNMENT);
+        assertTokenEquals(tokens.get(12), "y", BSPLTokenType.WORD);
+        assertTokenEquals(tokens.get(13), "private", BSPLTokenType.KEYWORD);
+        assertTokenEquals(tokens.get(14), "z", BSPLTokenType.WORD);
+        assertTokenEquals(tokens.get(15), "}", BSPLTokenType.BRACE_CLOSE);
+    }
+
+    private void assertTokenEquals(BSPLToken token, String value, BSPLTokenType type) {
+        assertEquals(value, token.value());
+        assertEquals(type, token.type());
     }
 }
