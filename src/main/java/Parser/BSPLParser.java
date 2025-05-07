@@ -11,6 +11,7 @@ import static Tokenizer.BSPLTokenType.COMMA;
 import static Tokenizer.BSPLTokenType.DELIMITER;
 import static Tokenizer.BSPLTokenType.KEY;
 import static Tokenizer.BSPLTokenType.KEYWORD;
+import static Tokenizer.BSPLTokenType.PAREN_OPEN;
 import static Tokenizer.BSPLTokenType.WORD;
 
 import Parser.BSPLClasses.BSPLParameter;
@@ -67,10 +68,10 @@ public class BSPLParser {
     }
 
     private List<BSPLRole> parseRoles() {
-        if (!checkTokenTypeAndValue(peekNextToken(), KEYWORD, "roles")) {
+        if (notKeyword(peekNextToken(), "roles")) {
             return List.of();
         }
-        assertTokenTypeAndValue(getNextToken(), KEYWORD, "roles");
+        assertKeyword(getNextToken(),"roles");
 
         BSPLToken token = peekNextToken();
 
@@ -105,10 +106,10 @@ public class BSPLParser {
     }
 
     private List<BSPLParameter> parseParameters() {
-        if (!checkTokenTypeAndValue(peekNextToken(), KEYWORD, "parameters")) {
+        if (notKeyword(peekNextToken(), "parameters")) {
             return List.of();
         }
-        assertTokenTypeAndValue(getNextToken(), KEYWORD, "parameters");
+        assertKeyword(getNextToken(), "parameters");
 
         BSPLToken token = peekNextToken();
 
@@ -129,10 +130,10 @@ public class BSPLParser {
     }
 
     private List<BSPLPrivateParameters> parsePrivateParameters() {
-        if (!checkTokenTypeAndValue(peekNextToken(), KEYWORD, "private")) {
+        if (notKeyword(peekNextToken(), "private")) {
             return List.of();
         }
-        assertTokenTypeAndValue(getNextToken(), KEYWORD, "private");
+        assertKeyword(getNextToken(), "private");
         final List<BSPLPrivateParameters> privateParameters = new ArrayList<>();
 
         BSPLToken token = peekNextToken();
@@ -192,7 +193,7 @@ public class BSPLParser {
             }
             return new BSPLMessage(referenceNameOrSender.value(), recipient.value(),
                 messageName.value(),parameters);
-        } else if (checkTokenTypeAndValue(token, DELIMITER, "(")) { // in a reference
+        } else if (checkTokenType(token, PAREN_OPEN)) { // in a reference
             throw new NotImplementedException("BSPL references not yet implemented");
         } else {
             throw new ParserException(
@@ -202,32 +203,24 @@ public class BSPLParser {
 
 
     private boolean checkTokenType(BSPLToken token, BSPLTokenType expectedType) {
-        return token != null && token.type() == expectedType;
-    }
-
-    private boolean checkTokenTypeAndValue(BSPLToken token, BSPLTokenType expectedType,
-                                           String expectedValue) {
-        return token != null && token.type() == expectedType &&
-            Objects.equals(token.value(), expectedValue);
+        return token != null && token.type() == expectedType && token.value() != null;
     }
 
     private void assertTokenType(BSPLToken token, BSPLTokenType expectedType) {
-        if (token == null || token.type() != expectedType) {
+        if(!checkTokenType(token, expectedType)) {
             throw new ParserException(token, expectedType);
         }
-        if (token.value() == null) {
-            throw new ParserException("Expected token to have value but got null");
-        }
     }
 
-    private void assertTokenTypeAndValue(BSPLToken token, BSPLTokenType expectedType,
-                                         String expectedValue) {
-        if (token == null || token.type() != expectedType || !Objects.equals(token.value(),
-            expectedValue)) {
-            throw new ParserException(token, expectedType, expectedValue);
-        }
+    private boolean notKeyword(BSPLToken token, String keyword) {
+        return token == null || token.type() != KEYWORD || !Objects.equals(token.value(), keyword);
     }
 
+    private void assertKeyword(BSPLToken token, String expectedKeyword) {
+        if (notKeyword(token, expectedKeyword)) {
+            throw new ParserException("Expected keyword: " + expectedKeyword + " but got: " + token);
+        }
+    }
 
     private BSPLToken getNextToken() {
         if (currentTokenIndex < tokens.size()) {
