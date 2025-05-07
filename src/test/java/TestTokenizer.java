@@ -15,6 +15,50 @@ import Tokenizer.BSPLTokenizer;
 
 public class TestTokenizer {
 
+
+    /**
+     * Test that each word becomes expected token.
+     */
+    @Test
+    public void testTokenizer() {
+        final List<BSPLToken> tokens = getBSPLTokens();
+        assertEquals(22, tokens.size());
+        assertTokenEquals(tokens.get(0), "out", BSPLTokenType.ADORNMENT);
+        assertTokenEquals(tokens.get(1), "in", BSPLTokenType.ADORNMENT);
+        assertTokenEquals(tokens.get(2), "opt", BSPLTokenType.ADORNMENT);
+        assertTokenEquals(tokens.get(3), "nil", BSPLTokenType.ADORNMENT);
+        assertTokenEquals(tokens.get(4), "key", BSPLTokenType.KEY);
+        assertTokenEquals(tokens.get(5), "roles", BSPLTokenType.KEYWORD);
+        assertTokenEquals(tokens.get(6), "parameters", BSPLTokenType.KEYWORD);
+        assertTokenEquals(tokens.get(7), "private", BSPLTokenType.KEYWORD);
+        assertTokenEquals(tokens.get(8), "{", BSPLTokenType.BRACE_OPEN);
+        assertTokenEquals(tokens.get(9), "}", BSPLTokenType.BRACE_CLOSE);
+        assertTokenEquals(tokens.get(10), ",", BSPLTokenType.COMMA);
+        assertTokenEquals(tokens.get(11), "[", BSPLTokenType.BRACKET_OPEN);
+        assertTokenEquals(tokens.get(12), "]", BSPLTokenType.BRACKET_CLOSE);
+        assertTokenEquals(tokens.get(13), ":", BSPLTokenType.COLON);
+        assertTokenEquals(tokens.get(14), "(", BSPLTokenType.PAREN_OPEN);
+        assertTokenEquals(tokens.get(15), ")", BSPLTokenType.PAREN_CLOSE);
+        assertTokenEquals(tokens.get(16), "->", BSPLTokenType.ARROW);
+        assertTokenEquals(tokens.get(17), "→", BSPLTokenType.ARROW);
+        assertTokenEquals(tokens.get(18), "↦", BSPLTokenType.ARROW);
+        assertTokenEquals(tokens.get(19), "Alice", BSPLTokenType.WORD);
+        assertTokenEquals(tokens.get(20), "Bob", BSPLTokenType.WORD);
+        assertTokenEquals(tokens.get(21), "Charlie", BSPLTokenType.WORD);
+    }
+
+    private static List<BSPLToken> getBSPLTokens() {
+        final String adornments = "out in opt nil";
+        final String key = "key";
+        final String keywords = "roles parameters private";
+        final String delimiters = "{},[]:()";
+        final String arrows = "-> → ↦";
+        final String words = "Alice Bob Charlie";
+        final String testString = adornments + " " + key + " " + keywords + " " + delimiters + " " + arrows + " " + words;
+        return new BSPLTokenizer(testString).tokenize();
+    }
+
+
     @Test
     public void testGetNextToken() {
         // Test the getNextToken method
