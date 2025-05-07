@@ -1,67 +1,97 @@
 package Parser.BSPLClasses;
 
+import Parser.BSPLClasses.Reference.BSPLReference;
+import java.util.List;
+import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
 
-public record BSPLProtocol(String name, java.util.List<BSPLRole> roles,
-                           java.util.List<BSPLParameter> parameters,
-                           java.util.List<BSPLPrivateParameters> privateParameters,
-                           java.util.List<Parser.BSPLClasses.Reference.BSPLReference> references) {
+public final class BSPLProtocol {
+    private final String name;
+    private final List<BSPLRole> roles;
+    private final List<BSPLParameter> parameters;
+    private final List<BSPLPrivateParameters> privateParameters;
+    private final List<BSPLReference> references;
 
+    public BSPLProtocol(String name, List<BSPLRole> roles,
+                        List<BSPLParameter> parameters,
+                        List<BSPLPrivateParameters> privateParameters,
+                        List<BSPLReference> references) {
+        this.name = name;
+        this.roles = roles;
+        this.parameters = parameters;
+        this.privateParameters = privateParameters;
+        this.references = references;
+    }
 
 
     @Override
     @NotNull
     public String toString() {
-        return  "\n" + name +" {\n" +
-                "\troles " + getRolesString() +
-                "\tparameters " + getParametersString() +
-                getPrivateParametersString() +
-                "\t" + getReferencesString() +
-                "}\n";
+        return "\n" + name + " {\n" +
+            "\t" + createStringFromBSPLList("roles", roles, ", ") +
+            "\t" + createStringFromBSPLList("parameters", parameters, ", ") +
+            "\t" + createStringFromBSPLList("private", privateParameters, ", ") +
+            "\n" +
+            "\t" + createStringFromBSPLList(null, references, "\n\t") +
+            "}";
     }
 
-    private String getRolesString() {
+    private <T> String createStringFromBSPLList(String prefix, List<T> list, String separator) {
         StringBuilder sb = new StringBuilder();
-        for (BSPLRole role : roles) {
-            sb.append(role.role()).append(", ");
+        if (list.isEmpty()) {
+            return "";
         }
-        sb.delete(sb.length() - 2, sb.length()); // Remove the last comma and space
+        if (prefix != null) {
+            sb.append(prefix).append(" ");
+        }
+
+        for (T item : list) {
+            sb.append(item.toString()).append(separator);
+        }
+        sb.delete(sb.length() - 2, sb.length());
         sb.append('\n');
         return sb.toString();
     }
 
-    private String getParametersString() {
-        StringBuilder sb = new StringBuilder();
-        for (BSPLParameter parameter : parameters) {
-            sb.append(parameter.toString());
-            sb.append(", ");
-        }
-        sb.delete(sb.length() - 2, sb.length()); // Remove the last comma and space
-        sb.append('\n');
-        return sb.toString();
+    public String name() {
+        return name;
     }
 
-    private String getPrivateParametersString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("\tprivate ");
-        if (privateParameters.isEmpty()) {
-            return "\n";
-        }
-        for (BSPLPrivateParameters privateParameter : privateParameters) {
-            sb.append(privateParameter.name()).append(", ");
-        }
-        sb.delete(sb.length() - 2, sb.length()); // Remove the last comma and space
-        sb.append("\n\n");
-        return sb.toString();
+    public List<BSPLRole> roles() {
+        return roles;
     }
 
-    private String getReferencesString() {
-        StringBuilder sb = new StringBuilder();
-        for (Parser.BSPLClasses.Reference.BSPLReference reference : references) {
-            sb.append(reference.toString()).append("\n\t");
-        }
-        sb.delete(sb.length() - 2, sb.length()); // Remove the last comma and space
-        sb.append('\n');
-        return sb.toString();
+    public List<BSPLParameter> parameters() {
+        return parameters;
     }
+
+    public List<BSPLPrivateParameters> privateParameters() {
+        return privateParameters;
+    }
+
+    public List<BSPLReference> references() {
+        return references;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj == null || obj.getClass() != this.getClass()) {
+            return false;
+        }
+        var that = (BSPLProtocol) obj;
+        return Objects.equals(this.name, that.name) &&
+            Objects.equals(this.roles, that.roles) &&
+            Objects.equals(this.parameters, that.parameters) &&
+            Objects.equals(this.privateParameters, that.privateParameters) &&
+            Objects.equals(this.references, that.references);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, roles, parameters, privateParameters, references);
+    }
+
 }
