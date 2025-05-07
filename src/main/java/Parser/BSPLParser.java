@@ -57,13 +57,9 @@ public class BSPLParser {
         assertTokenType(getNextToken(), BRACE_OPEN);
 
         final List<BSPLRole> roles = this.parseRoles();
-        System.out.println("roles: " + roles);
         final List<BSPLParameter> parameters = this.parseParameters();
-        System.out.println("parameters: " + parameters);
         final List<BSPLPrivateParameters> privateParameters = this.parsePrivateParameters();
-        System.out.println("private parameters: " + privateParameters);
         final List<BSPLReference> references = this.parseReferences();
-        System.out.println("references: " + references);
         assertTokenType(getNextToken(), BRACE_CLOSE);
 
         return new BSPLProtocol(protocolName.value(), roles, parameters, privateParameters,

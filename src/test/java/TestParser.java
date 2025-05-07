@@ -1,7 +1,12 @@
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import Parser.BSPLClasses.BSPLParameter;
+import Parser.BSPLClasses.BSPLPrivateParameters;
 import Parser.BSPLClasses.BSPLProtocol;
+import Parser.BSPLClasses.BSPLRole;
 import Parser.BSPLParser;
+import Tokenizer.BSPLToken;
 import Tokenizer.BSPLTokenizer;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -56,5 +61,53 @@ public class TestParser {
     final BSPLParser parser = new BSPLParser(tokenizer.tokenize());
     final List<BSPLProtocol> protocols = parser.parse();
     System.out.println(protocols);
+  }
+
+  @Test
+  public void testEmptyProtocol() {
+    final String fileString = "EmptyProtocol {}";
+
+    final BSPLProtocol expected = new BSPLProtocol("EmptyProtocol",
+        List.of(),
+        List.of(),
+        List.of(),
+        List.of()
+    );
+
+    final BSPLTokenizer tokenizer = new BSPLTokenizer(fileString);
+    final BSPLParser parser = new BSPLParser(tokenizer.tokenize());
+    final List<BSPLProtocol> protocols = parser.parse();
+
+    assertEquals(1, protocols.size());
+    BSPLProtocol emptyProtocol = protocols.getFirst();
+    assertEquals(expected, emptyProtocol);
+  }
+
+  @Test
+  public void testTinyProtocol() {
+    final String tinyProtocol = """
+                                TinyProtocol {
+                                \troles Alice, Bob
+                                \tparameters in x key,out y
+                                \tprivate z
+                                }""";
+
+    final BSPLProtocol expected = new BSPLProtocol("TinyProtocol",
+        List.of(new BSPLRole("Alice"), new BSPLRole("Bob")),
+        List.of(
+            new BSPLParameter("in", "x", true),
+            new BSPLParameter("out", "y", false)
+        ),
+        List.of(new BSPLPrivateParameters("z")),
+        List.of()
+    );
+    final BSPLTokenizer tokenizer = new BSPLTokenizer(tinyProtocol);
+    final List<BSPLToken> tokens = tokenizer.tokenize();
+    final BSPLParser parser = new BSPLParser(tokens);
+    final List<BSPLProtocol> protocols = parser.parse();
+
+    BSPLProtocol tinyProtocolObj = protocols.getFirst();
+    assertNotNull(tinyProtocolObj);
+    assertEquals(expected, tinyProtocolObj);
   }
 }
