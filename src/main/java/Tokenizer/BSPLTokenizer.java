@@ -11,18 +11,8 @@ public class BSPLTokenizer {
     private final String srcString;
     private int idx = 0;
 
-    private static final List<String> KEYWORDS = List.of(
-        "roles", "parameters", "private"
-    );
-    private static final List<Character> DELIMITERS = List.of(',', '{', '}', '[', ']', ':');
-    private static final List<String> ADORNMENTS = List.of(
-        "out", "in", "nil", "any", "opt"
-    );
-    private static final List<String> ARROW = List.of("->", "→", "↦");
-
+    private static final List<Character> DELIMITERS = List.of(',', '{', '}', '[', ']', ':','(', ')');
     private static final List<String> COMMENTS = List.of("//", "#");
-
-    private static final String KEY = "key";
 
     public BSPLTokenizer(String srcString) {
         this.srcString = srcString;
@@ -39,37 +29,21 @@ public class BSPLTokenizer {
     }
 
     private BSPLTokenType getTokenType(String token) {
-        if (DELIMITERS.contains(token.charAt(0))) {
-            return switch (token) {
-                case "{" -> BSPLTokenType.BRACE_OPEN;
-                case "}" -> BSPLTokenType.BRACE_CLOSE;
-                case "," -> BSPLTokenType.COMMA;
-                case "[" -> BSPLTokenType.BRACKET_OPEN;
-                case "]" -> BSPLTokenType.BRACKET_CLOSE;
-                case ":" -> BSPLTokenType.COLON;
-                case "(" -> BSPLTokenType.PAREN_OPEN;
-                case ")" -> BSPLTokenType.PAREN_CLOSE;
-                default -> BSPLTokenType.DELIMITER;
-            };
-        }
-
-        if (KEYWORDS.contains(token)) {
-            return BSPLTokenType.KEYWORD;
-        }
-
-        if (token.equals(KEY)) {
-            return BSPLTokenType.KEY;
-        }
-
-        if (ADORNMENTS.contains(token)) {
-            return BSPLTokenType.ADORNMENT;
-        }
-
-        if (ARROW.contains(token)) {
-            return BSPLTokenType.ARROW;
-        }
-
-        return BSPLTokenType.WORD;
+        return switch(token) {
+            case "{" -> BSPLTokenType.BRACE_OPEN;
+            case "}" -> BSPLTokenType.BRACE_CLOSE;
+            case "," -> BSPLTokenType.COMMA;
+            case "[" -> BSPLTokenType.BRACKET_OPEN;
+            case "]" -> BSPLTokenType.BRACKET_CLOSE;
+            case ":" -> BSPLTokenType.COLON;
+            case "(" -> BSPLTokenType.PAREN_OPEN;
+            case ")" -> BSPLTokenType.PAREN_CLOSE;
+            case "->", "→", "↦" -> BSPLTokenType.ARROW;
+            case "out", "in", "nil", "any", "opt" -> BSPLTokenType.ADORNMENT;
+            case "roles", "parameters", "private" -> BSPLTokenType.KEYWORD;
+            case "key" -> BSPLTokenType.KEY;
+            default -> BSPLTokenType.WORD;
+        };
     }
 
 
@@ -113,13 +87,6 @@ public class BSPLTokenizer {
             }
         }
         return token.toString();
-    }
-
-    private String peakNextToken() {
-        final int oldIdx = this.idx;
-        final String token = getNextToken();
-        this.idx = oldIdx; // reset the index
-        return token;
     }
 
 
