@@ -1,0 +1,7 @@
+With-Reject {
+  roles C, S
+  parameters out item key, out done
+
+  Order(C, S, out item key, out done)
+  S -> C: Reject[in item key, out done]
+}

@@ -2,6 +2,8 @@ import Parser.BSPLClasses.BSPLParameter;
 import Parser.BSPLClasses.BSPLPrivateParameters;
 import Parser.BSPLClasses.BSPLProtocol;
 import Parser.BSPLClasses.BSPLRole;
+import Parser.BSPLClasses.Reference.BSPLMessage;
+import Parser.BSPLClasses.Reference.BSPLProtocolReference;
 import Parser.BSPLParser;
 import Parser.util.ParserException;
 import Tokenizer.BSPLToken;
@@ -122,10 +124,62 @@ public class TestParser {
   }
 
   @Test
-  public void testParseFromFile() throws IOException, URISyntaxException {
+  public void testParseFromFile() throws IOException {
     // Test the parseFromFile method
     final String pathString = "src/test/resources/example_logistics.bspl";
     final List<BSPLProtocol> protocols = BSPLParser.parseFromFile(pathString);
     System.out.println(protocols);
+  }
+
+
+  @Test
+  public void testParseBSPLWithReference() throws URISyntaxException, IOException {
+    URL resource = getClass().getClassLoader().getResource("with-reject.bspl");
+    assertNotNull(resource);
+    Path path = Paths.get(resource.toURI());
+    final String fileString =
+        Files.readString(path);
+
+    final BSPLProtocol expected = new BSPLProtocol(
+        "With-Reject",
+        List.of(new BSPLRole("C"), new BSPLRole("S")),
+        List.of(
+            new BSPLParameter("out", "item", true),
+            new BSPLParameter("out", "done", false)
+        ),
+        List.of(),
+        List.of(
+            new BSPLProtocolReference("Order",
+                List.of(
+                    new BSPLRole("C"),
+                    new BSPLRole("S")
+                ),
+                List.of(
+                    new BSPLParameter("out", "item", true),
+                    new BSPLParameter("out", "done", false)
+                )
+            ),
+            new BSPLMessage(
+                "S",
+                "C",
+                "Reject",
+                List.of(
+                    new BSPLParameter("in", "item", true),
+                    new BSPLParameter("out", "done", false)
+                )
+            )
+        )
+    );
+
+    final BSPLTokenizer tokenizer = new BSPLTokenizer(fileString);
+    final BSPLParser parser = new BSPLParser(tokenizer.tokenize());
+    final List<BSPLProtocol> protocols = parser.parse();
+    assertNotNull(protocols);
+    assertEquals(1, protocols.size());
+    BSPLProtocol protocol = protocols.getFirst();
+    assertEquals(expected, protocol);
+
+
+
   }
 }

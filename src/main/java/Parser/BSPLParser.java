@@ -11,6 +11,7 @@ import static Tokenizer.BSPLTokenType.COMMA;
 import static Tokenizer.BSPLTokenType.DELIMITER;
 import static Tokenizer.BSPLTokenType.KEY;
 import static Tokenizer.BSPLTokenType.KEYWORD;
+import static Tokenizer.BSPLTokenType.PAREN_CLOSE;
 import static Tokenizer.BSPLTokenType.PAREN_OPEN;
 import static Tokenizer.BSPLTokenType.WORD;
 
@@ -18,9 +19,9 @@ import Parser.BSPLClasses.BSPLParameter;
 import Parser.BSPLClasses.BSPLPrivateParameters;
 import Parser.BSPLClasses.BSPLProtocol;
 import Parser.BSPLClasses.Reference.BSPLMessage;
+import Parser.BSPLClasses.Reference.BSPLProtocolReference;
 import Parser.BSPLClasses.Reference.BSPLReference;
 import Parser.BSPLClasses.BSPLRole;
-import Parser.util.NotImplementedException;
 import Parser.util.ParserException;
 import Tokenizer.BSPLToken;
 import Tokenizer.BSPLTokenType;
@@ -207,7 +208,29 @@ public class BSPLParser {
             return new BSPLMessage(referenceNameOrSender.value(), recipient.value(),
                 messageName.value(),parameters);
         } else if (checkTokenType(token, PAREN_OPEN)) { // in a reference
-            throw new NotImplementedException("BSPL references not yet implemented");
+            token = getNextToken();
+            assertTokenType(token, PAREN_OPEN);
+
+            List<BSPLRole> roles = new ArrayList<>();
+            List<BSPLParameter> parameters = new ArrayList<>();
+
+            token = peekNextToken();
+            while (!checkTokenType(token, PAREN_CLOSE)) {
+                if (checkTokenType(token, WORD)) {
+                    roles.add(new BSPLRole(getNextToken().value()));
+                } else if (checkTokenType(token, ADORNMENT)) {
+                    parameters.add(parseParameter());
+                } else {
+                    throw new ParserException(token);
+                }
+                if (checkTokenType(peekNextToken(), COMMA)) {
+                    getNextToken();
+                }
+                token = peekNextToken();
+            }
+            assertTokenType(getNextToken(), PAREN_CLOSE);
+
+            return new BSPLProtocolReference(referenceNameOrSender.value(), roles, parameters);
         } else {
             throw new ParserException(
                 "Expected token type: " + ARROW + " or " + DELIMITER + " but got: " + token);
