@@ -11,7 +11,7 @@ WS: [ \t\r\n]+ -> channel(HIDDEN);
 document: (protocol)+ EOF;
 
 // Protocol definition
-protocol: ('protocol')? name=WORD '{'
+protocol: ('protocol')? name=spacename '{'
             'roles' roles
             'parameters' params
             ('private' params)?
